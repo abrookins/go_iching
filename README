@@ -1,8 +1,9 @@
-This is a simple experiment with Go: an I Ching oracle. 
+This is a simple experiment with Go: an I Ching oracle.
 
 Build the package with `go build` and run the `iching` binary. It simulates the
 traditional three-coin method of building six lines that form a hexagram, then
 prints information about the hexagram, including external links to a couple of
-well-known translations.
+well-known translations. If the hexagram is "changing" into another hexagram, it
+finds that hexagram and prints its information as well.
 
 Right now it works on the command line, though my end goal is a JSON API.
