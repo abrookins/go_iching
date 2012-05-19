@@ -1,9 +1,35 @@
 This is a simple experiment with Go: an I Ching oracle.
 
-Build the package with `go build` and run the `iching` binary. It simulates the
-traditional three-coin method of building six lines that form a hexagram, then
-prints information about the hexagram, including external links to a couple of
-well-known translations. If the hexagram is "changing" into another hexagram, it
-finds that hexagram and prints its information as well.
+Use the package by importing it:
 
-Right now it works on the command line, though my end goal is a JSON API.
+    import "iching"
+
+Then run `iching.GetReading()`:
+
+    question := "Is this a bubble?"
+    reading := iching.GetReading()
+
+`iching.GetReading()` which takes a question (a string) and
+returns an `iching.Reading` object. `iching.GetReading()` simulates the
+traditional three-coin method of building six lines that form a hexagram. Once
+it has the lines, it finds an `iching.Hexagram` object that matches the
+arrangement of the lines and, if the lines are "changing" (per the I Ching
+divination rules), it calculates the next hexagram.
+
+These values are included in the `iching.Reading` object (Question, Lines,
+Hexagram and NextHexagram).
+
+    // Obviously, import "fmt" first ...
+    fmt.Println(reading.Question)
+    fmt.Println(reading.Lines) 
+
+`iching.Hexagram` objects include the (boolean) lines, the unicode
+representation of the hexagram and have methods that return external links to a
+couple of well-known translations of the hexagram.
+
+    fmt.Println(reading.Hexagram.Character)
+    fmt.Println(reading.Hexagram.Num)
+    fmt.Println(reading.Hexagram.Name)
+    // etc.
+
+I'm working on a JSON API to wrap this library.

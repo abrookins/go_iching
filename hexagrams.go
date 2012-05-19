@@ -1,46 +1,72 @@
-package main
+package iching
 
 import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"path"
+	"runtime"
 	"strconv"
 	"strings"
 )
 
 type Hexagram struct {
 	// The canonical I Ching number of this hexagram.
-	num int
+	Num int
 
 	// The series of boolean values ("lines") that form the hexagram.
-	lines [6]bool
+	Lines [6]bool
 
 	// English name of the hexagram.
-	name string
+	Name string
 
 	// The Unicode character of the hexagram.
-	character string
+	Character string
 }
+
+// The value of these constants follows the traditional three-coin divination
+// technique. See: http://en.wikipedia.org/wiki/I_Ching_divination
+const (
+	// A broken line changing into a solid line.
+	LINE_OLD_YIN = 6
+
+	// A solid line.
+	LINE_YOUNG_YANG = 7
+
+	// A broken line.
+	LINE_YOUNG_YIN = 8
+
+	// A solid line changing into a broken line.
+	LINE_OLD_YANG = 9
+)
+
+const (
+	// A line that is either new or old yin.
+	YIN = false
+
+	// A line that is either new or old yang.
+	YANG = true
+)
 
 // getWillhelmUrl returns a URL to the hexagram's entry in a copy of the
 // Richard Wilhelm and Cary F. Baynes translation "I Ching: Or, Book of Changes"
 // (1950) available.
-func (hexagram *Hexagram) getWillhelmUrl() string {
-	return fmt.Sprintf("http://www.akirarabelais.com/i/i.html#%v", hexagram.num)
+func (hexagram *Hexagram) GetWillhelmUrl() string {
+	return fmt.Sprintf("http://www.akirarabelais.com/i/i.html#%v", hexagram.Num)
 }
 
 // getLeggeUrl returns a URL to the hexagram's entry in a copy of the James
 // Legge translation of the I Ching (1899).
-func (hexagram *Hexagram) getLeggeUrl() string {
+func (hexagram *Hexagram) GetLeggeUrl() string {
 	var fmtString string
 
-	if hexagram.num < 10 {
+	if hexagram.Num < 10 {
 		fmtString = "%.2d"
 	} else {
 		fmtString = "%v"
 	}
 
-	val := fmt.Sprintf(fmtString, hexagram.num)
+	val := fmt.Sprintf(fmtString, hexagram.Num)
 	return fmt.Sprintf("http://www.sacred-texts.com/ich/%v.htm", val)
 }
 
@@ -48,25 +74,12 @@ var hexagrams [64]Hexagram
 
 var hexagramLookupTable map[[6]bool]Hexagram
 
-func stringsToBools(vals []string) []bool {
-	bools := make([]bool, len(vals))
-
-	for i, val := range vals {
-		val, err := strconv.ParseBool(val)
-
-		if err != nil {
-			fmt.Println("Could not convert value %v to boolean!", val)
-		}
-
-		bools[i] = val
-	}
-
-	return bools
-}
 
 // Load hexagram data from the CSV data file.
 func init() {
-	f, err := os.Open("data.csv")
+	_, filename, _, _ := runtime.Caller(1)
+
+	f, err := os.Open(path.Join(path.Dir(filename), "data.csv"))
 
 	if err != nil {
 		panic(fmt.Sprintf("Could not open data.csv"))
@@ -91,12 +104,64 @@ func init() {
 	hexagramLookupTable = make(map[[6]bool]Hexagram)
 
 	for _, hexagram := range hexagrams {
-		hexagramLookupTable[hexagram.lines] = hexagram
+		hexagramLookupTable[hexagram.Lines] = hexagram
 	}
 }
 
-func GetHexagram(lines [6]bool) (Hexagram, bool) {
+func stringsToBools(vals []string) []bool {
+	bools := make([]bool, len(vals))
+
+	for i, val := range vals {
+		val, err := strconv.ParseBool(val)
+
+		if err != nil {
+			fmt.Println("Could not convert value %v to boolean!", val)
+		}
+
+		bools[i] = val
+	}
+
+	return bools
+}
+
+// linesToBools converts an array of Lines that may include "young"
+// and "old" yin and yang values into an array of booleans, in which each
+// boolean represents whether the line is a yin or yang value.
+func linesToBools(lines [6]Line) [6]bool {
+	var bools [6]bool
+
+	for i, line := range lines {
+		if line == LINE_YOUNG_YANG || line == LINE_OLD_YANG {
+			bools[i] = YANG
+		} else {
+			bools[i] = YIN
+		}
+	}
+
+	return bools
+}
+
+// getNextHexagram checks if any lines in `lines` are changing, and if so,
+// find and return the Hexagram the new lines form.
+func getNextHexagram(lines [6]Line) (*Hexagram, bool) { 
+	var nextLines [6]Line
+
+	for i, line := range lines {
+		switch {
+		case line == LINE_OLD_YANG:
+			nextLines[i] = LINE_YOUNG_YIN
+		case line == LINE_OLD_YIN:
+			nextLines[i] = LINE_YOUNG_YANG
+		default:
+			nextLines[i] = line	
+		}
+	}
+
+	return GetHexagram(linesToBools(nextLines))
+}
+
+func GetHexagram(lines [6]bool) (*Hexagram, bool) {
 	hexagram, found := hexagramLookupTable[lines]
 
-	return hexagram, found
+	return &hexagram, found
 }
