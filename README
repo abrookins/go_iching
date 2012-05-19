@@ -7,7 +7,7 @@ Use the package by importing it:
 Then run `iching.GetReading()`:
 
     question := "Is this a bubble?"
-    reading := iching.GetReading()
+    reading := iching.GetReading(question)
 
 `iching.GetReading()` which takes a question (a string) and
 returns an `iching.Reading` object. `iching.GetReading()` simulates the
