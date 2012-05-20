@@ -26,6 +26,7 @@ type Hexagram struct {
 
 // The value of these constants follows the traditional three-coin divination
 // technique. See: http://en.wikipedia.org/wiki/I_Ching_divination
+
 const (
 	// A broken line changing into a solid line.
 	LINE_OLD_YIN = 6
@@ -67,7 +68,7 @@ func (hexagram *Hexagram) GetLeggeUrl() string {
 	}
 
 	val := fmt.Sprintf(fmtString, hexagram.Num)
-	return fmt.Sprintf("http://www.sacred-texts.com/ich/%v.htm", val)
+	return fmt.Sprintf("http://www.sacred-texts.com/ich/ic%v.htm", val)
 }
 
 var hexagrams [64]Hexagram
@@ -96,8 +97,8 @@ func init() {
 		lines := strings.Split(row[0], "|")
 		var linesAsBools [6]bool
 		copy(linesAsBools[:], stringsToBools(lines[:6]))
-		// Lines are zero-indexed, but the hexagrams begin with `1` in external
-		// references.
+		// Lines are zero-indexed and ordered by hexagram, but the order of hexagrams
+		// begins with `1` in external references.
 		hexagrams[i] = Hexagram{i + 1, linesAsBools, row[1], row[2]}
 	}
 
@@ -160,8 +161,31 @@ func getNextHexagram(lines [6]Line) (*Hexagram, bool) {
 	return GetHexagram(linesToBools(nextLines))
 }
 
+// GetAllHexagrams returns a pointer to `hexagrams`.
+func GetAllHexagrams() *[64]Hexagram {
+	return &hexagrams
+}
+
+// GetHexagramByNum returns the hexagram whose number is `num`. Hexagrams are
+// traditionally ordered by specific numbers and they appear in the `hexagrams`
+// array in this order.
+func GetHexagramByNum(num int) (*Hexagram, bool) {
+	// Hexagram numbers are one-based, while our array of hexagrams is zero-based.
+	num = num - 1
+	numHexagrams := len(hexagrams) - 1
+	var hexagram Hexagram
+
+	if num <= numHexagrams && num >= 0 {
+		hexagram := hexagrams[num]
+		return &hexagram, true
+	}
+
+	return &hexagram, false
+}
+
+// GetHexagram returns the hexagram whose series of "yin" and "yang" lines
+// matches the given array of booleans in `lines`.
 func GetHexagram(lines [6]bool) (*Hexagram, bool) {
 	hexagram, found := hexagramLookupTable[lines]
-
 	return &hexagram, found
 }
