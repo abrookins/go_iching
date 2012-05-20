@@ -22,6 +22,12 @@ type Hexagram struct {
 
 	// The Unicode character of the hexagram.
 	Character string
+
+	// Description of the hexagram from Wikipedia.
+	Description string
+
+	// URLs to Internet translations for this hexagram.
+	TranslationUrls []string
 }
 
 // The value of these constants follows the traditional three-coin divination
@@ -49,32 +55,42 @@ const (
 	YANG = true
 )
 
-// getWillhelmUrl returns a URL to the hexagram's entry in a copy of the
-// Richard Wilhelm and Cary F. Baynes translation "I Ching: Or, Book of Changes"
-// (1950) available.
-func (hexagram *Hexagram) GetWillhelmUrl() string {
-	return fmt.Sprintf("http://www.akirarabelais.com/i/i.html#%v", hexagram.Num)
+
+// getWillhelmUrl returns a URL to the entry for hexagram with `hexagramNum` in
+// an internet copy of the Richard Wilhelm and Cary F. Baynes translation "I
+// Ching: Or, Book of Changes" (1950).
+func getWillhelmUrl(hexagramNum int) string {
+	return fmt.Sprintf("http://www.akirarabelais.com/i/i.html#%v", hexagramNum)
 }
 
-// getLeggeUrl returns a URL to the hexagram's entry in a copy of the James
-// Legge translation of the I Ching (1899).
-func (hexagram *Hexagram) GetLeggeUrl() string {
+// getLeggeUrl returns a URL to the entry for hexagram with `hexagramNum` in an
+// internet copy of the James Legge translation of the I Ching (1899).
+func getLeggeUrl(hexagramNum int) string {
 	var fmtString string
 
-	if hexagram.Num < 10 {
+	if hexagramNum < 10 {
 		fmtString = "%.2d"
 	} else {
 		fmtString = "%v"
 	}
 
-	val := fmt.Sprintf(fmtString, hexagram.Num)
+	val := fmt.Sprintf(fmtString, hexagramNum)
 	return fmt.Sprintf("http://www.sacred-texts.com/ich/ic%v.htm", val)
+}
+
+// getTranslationUrls returns a slice of string URLs to internet translations
+// for the hexagram identified by `hexagramNum`.
+//
+// TODO: There has to be a way to do this using a slice or array of function
+// types (or pointers), and then iterate over the slice and run the functions,
+// but I can't figure it out yet in Go.
+func getTranslationUrls(hexagramNum int) []string {
+	return []string{getWillhelmUrl(hexagramNum), getLeggeUrl(hexagramNum)}
 }
 
 var hexagrams [64]Hexagram
 
 var hexagramLookupTable map[[6]bool]Hexagram
-
 
 // Load hexagram data from the CSV data file.
 func init() {
@@ -96,10 +112,13 @@ func init() {
 	for i, row := range rows {
 		lines := strings.Split(row[0], "|")
 		var linesAsBools [6]bool
+
+		// Convert lines slice to an array.
 		copy(linesAsBools[:], stringsToBools(lines[:6]))
+
 		// Lines are zero-indexed and ordered by hexagram, but the order of hexagrams
 		// begins with `1` in external references.
-		hexagrams[i] = Hexagram{i + 1, linesAsBools, row[1], row[2]}
+		hexagrams[i] = Hexagram{i + 1, linesAsBools, row[1], row[2], row[3], getTranslationUrls(i)}
 	}
 
 	hexagramLookupTable = make(map[[6]bool]Hexagram)
