@@ -54,7 +54,7 @@ func getLine() Line {
 	return line
 }
 
-// getLines returns a six lines that form a Hexagram.
+// getLines returns an array of six lines that form a Hexagram.
 func getLines() [6]Line {
 	var lines [6]Line
 
