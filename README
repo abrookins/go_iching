@@ -24,8 +24,8 @@ Hexagram and NextHexagram).
     fmt.Println(reading.Lines) 
 
 `iching.Hexagram` objects include the (boolean) lines, the unicode
-representation of the hexagram and have methods that return external links to a
-couple of well-known translations of the hexagram.
+representation of the hexagram and external links to a couple of well-known
+translations of the hexagram.
 
     fmt.Println(reading.Hexagram.Character)
     fmt.Println(reading.Hexagram.Num)
