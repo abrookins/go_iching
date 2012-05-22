@@ -1,4 +1,4 @@
-This is a simple experiment with Go: an I Ching oracle.
+This is a simple experiment with Go: an I Ching library.
 
 Use the package by importing it:
 
