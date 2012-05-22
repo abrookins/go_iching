@@ -1,20 +1,24 @@
 This is a simple experiment with Go: an I Ching library.
 
-Use the package by importing it:
+Install with `go get`:
 
-    import "iching"
+    go get -u github.com/abrookins/go_iching 
+
+Import like so:
+
+    import "github.com/abrookins/go_iching"
 
 Then run `iching.GetReading()`:
 
     question := "Is this a bubble?"
     reading := iching.GetReading(question)
 
-`iching.GetReading()` which takes a question (a string) and
-returns an `iching.Reading` object. `iching.GetReading()` simulates the
-traditional three-coin method of building six lines that form a hexagram. Once
-it has the lines, it finds an `iching.Hexagram` object that matches the
-arrangement of the lines and, if the lines are "changing" (per the I Ching
-divination rules), it calculates the next hexagram.
+`iching.GetReading()` takes a question (a string) and returns an
+`iching.Reading` object. `iching.GetReading()` simulates the traditional
+three-coin method of building six lines that form a hexagram. Once it has the
+lines, it finds an `iching.Hexagram` object that matches the arrangement of the
+lines and, if the lines are "changing" (per the I Ching divination rules), it
+calculates the next hexagram.
 
 These values are included in the `iching.Reading` object (Question, Lines,
 Hexagram and NextHexagram).
